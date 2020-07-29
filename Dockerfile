@@ -9,6 +9,9 @@ RUN set -x \
     pkgconfig \
     cmake \
     git \
+    bash \
+    libstdc++ \
+    curl \
     && luarocks install https://github.com/apache/incubator-apisix/raw/master/rockspec/apisix-master-0.rockspec --tree=/usr/local/apisix/deps \
     && cp -v /usr/local/apisix/deps/lib/luarocks/rocks-5.1/apisix/master-0/bin/apisix /usr/bin/ \
     && bin='#! /usr/local/openresty/luajit/bin/luajit\npackage.path = "/usr/local/apisix/?.lua;/usr/local/apisix/addons/?.lua;/usr/local/apisix/addons/deps/share/lua/5.1/?.lua;" .. package.path\npackage.cpath = "/usr/local/apisix/addons/deps/lib64/lua/5.1/?.so;/usr/local/apisix/addons/deps/lib/lua/5.1/?.so;" .. package.cpath' \
@@ -18,19 +21,8 @@ RUN set -x \
     && mkdir /usr/local/apisix/addons \
     && apk del .builddeps build-base make unzip
 
-
-FROM alpine:3.11 AS last-stage
-
-# add runtime for Apache APISIX
-RUN set -x \
-    && /bin/sed -i 's,http://dl-cdn.alpinelinux.org,https://mirrors.aliyun.com,g' /etc/apk/repositories \
-    && apk add --no-cache bash libstdc++ curl
-
 WORKDIR /usr/local/apisix
 
-COPY --from=production-stage /usr/local/openresty/ /usr/local/openresty/
-COPY --from=production-stage /usr/local/apisix/ /usr/local/apisix/
-COPY --from=production-stage /usr/bin/apisix /usr/bin/apisix
 ADD dashboard.tar.gz /usr/local/apisix
 
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
