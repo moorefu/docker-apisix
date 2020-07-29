@@ -1,5 +1,5 @@
 FROM openresty/openresty:alpine-fat AS production-stage
-
+ADD patch.sh .
 RUN set -x \
     && /bin/sed -i 's,http://dl-cdn.alpinelinux.org,https://mirrors.aliyun.com,g' /etc/apk/repositories \
     && apk add --no-cache --virtual .builddeps \
@@ -14,6 +14,7 @@ RUN set -x \
     && bin='#! /usr/local/openresty/luajit/bin/luajit\npackage.path = "/usr/local/apisix/?.lua;/usr/local/apisix/addons/?.lua;/usr/local/apisix/addons/deps/share/lua/5.1/?.lua;" .. package.path\npackage.cpath = "/usr/local/apisix/addons/deps/lib64/lua/5.1/?.so;/usr/local/apisix/addons/deps/lib/lua/5.1/?.so;" .. package.cpath' \
     && sed -i "1s@.*@$bin@" /usr/bin/apisix \
     && mv /usr/local/apisix/deps/share/lua/5.1/apisix /usr/local/apisix \
+    && sh ./patch.sh \
     && mkdir /usr/local/apisix/addons \
     && apk del .builddeps build-base make unzip
 
@@ -30,9 +31,10 @@ WORKDIR /usr/local/apisix
 COPY --from=production-stage /usr/local/openresty/ /usr/local/openresty/
 COPY --from=production-stage /usr/local/apisix/ /usr/local/apisix/
 COPY --from=production-stage /usr/bin/apisix /usr/bin/apisix
+ADD dashboard.tar.gz /usr/local/apisix
 
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
-VOLUME ["/usr/local/apisix/addons"]
+
 EXPOSE 9080 9443
 
 CMD ["sh", "-c", "/usr/bin/apisix init && /usr/bin/apisix init_etcd && /usr/local/openresty/bin/openresty -p /usr/local/apisix -g 'daemon off;'"]
