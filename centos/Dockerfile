@@ -4,6 +4,7 @@ FROM openresty/openresty:centos AS production-stage
 
 RUN set -x \
     && yum -y install \
+    which \
     automake \
     autoconf \
     libtool \
