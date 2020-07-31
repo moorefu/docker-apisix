@@ -21,6 +21,12 @@ RUN set -x \
 
 FROM openresty/openresty:centos  as last-stage
 
+RUN set -x \
+    && yum -y install \
+    gcc \
+    git \
+    bash
+
 WORKDIR /usr/local/apisix
 
 COPY --from=production-stage /usr/local/openresty/ /usr/local/openresty/
