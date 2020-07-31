@@ -2,6 +2,7 @@
 
 LUAJIT_DIR=/usr/local/openresty/luajit
 ADDONS_DIR=/usr/local/addons
+ADDONS_SPEC=addons-master-0.rockspec
 INIT_DIR=/docker-entrypoint-init.d
 # 先运行init.d 再运行 addons.rockspec
 
@@ -15,7 +16,7 @@ run_file(){
 
 run_init(){
     echo "Starting init scripts from '${INIT_DIR}':"
-	for fn in $(ls -1 /docker-entrypoint-init.d/* 2> /dev/null)
+	for fn in $(ls -1 /docker-entrypoint-init.d/*.sh 2> /dev/null)
 	do
 		# execute script if it didn't execute yet or if it was changed
 		cat $INIT_DIR/.cache 2> /dev/null | grep "$(md5sum $fn)" || run_file $fn
@@ -34,11 +35,11 @@ run_init(){
 }
 
 run_rocks(){
-    echo "Starting install rockspec from '${ADDONS_DIR}/addons.rockspec':"
+    echo "Starting install rockspec from '${ADDONS_DIR}/${ADDONS_SPEC}':"
 
-    cat ${ADDONS_DIR}/addons.rockspec.sum 2> /dev/null | grep "$(md5sum ${ADDONS_DIR}/addons.rockspec)"||luarocks install --lua-dir=${LUAJIT_DIR} ${ADDONS_DIR}/addons.rockspec --tree=${ADDONS_DIR}/deps --only-deps --local
+    cat ${ADDONS_DIR}/.cache 2> /dev/null | grep "$(md5sum ${ADDONS_DIR}/${ADDONS_SPEC})"||luarocks install --lua-dir=${LUAJIT_DIR} ${ADDONS_DIR}/${ADDONS_SPEC} --tree=${ADDONS_DIR}/deps --only-deps --local
 
-    md5sum ${ADDONS_DIR}/addons.rockspec > ${ADDONS_DIR}/addons.rockspec.sum
+    md5sum ${ADDONS_DIR}/${ADDONS_SPEC} > ${ADDONS_DIR}/.cache
 
     echo "Install rockspec finished"
 }
