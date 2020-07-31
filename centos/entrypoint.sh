@@ -37,7 +37,7 @@ run_init(){
 run_rocks(){
     echo "Starting install rockspec from '${ADDONS_DIR}/${ADDONS_SPEC}':"
 
-    cat ${ADDONS_DIR}/.cache 2> /dev/null | grep "$(md5sum ${ADDONS_DIR}/${ADDONS_SPEC})"||luarocks install --lua-dir=${LUAJIT_DIR} ${ADDONS_DIR}/${ADDONS_SPEC} --tree=${ADDONS_DIR}/deps --only-deps --local
+    cat ${ADDONS_DIR}/.cache 2> /dev/null | grep "$(md5sum ${ADDONS_DIR}/${ADDONS_SPEC})"||luarocks install $LUAROCKS_OPTS --lua-dir=${LUAJIT_DIR} ${ADDONS_DIR}/${ADDONS_SPEC} --tree=${ADDONS_DIR}/deps --only-deps --local
 
     md5sum ${ADDONS_DIR}/${ADDONS_SPEC} > ${ADDONS_DIR}/.cache
 
