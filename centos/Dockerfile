@@ -36,6 +36,7 @@ EXPOSE 9080 9443
 VOLUME ["/usr/local/apisix/addons"]
 
 ADD entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [""]
 
